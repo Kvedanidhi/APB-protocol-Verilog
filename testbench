@@ -1,0 +1,42 @@
+module apb_tb;
+  reg clk;
+  reg reset;
+  reg trans_req;
+  reg pready;
+  wire psel;
+  wire penable;
+  
+  apb uut(
+    .clk(clk),
+    .reset(reset),
+    .trans_req(trans_req),
+    .pready(pready),
+    .psel(psel),
+    .penable(penable)
+  );
+  
+  always #10 clk=~clk;
+  
+  initial begin
+    clk=0; reset=1;
+    trans_req=0; pready=0;
+    
+    #40;
+    reset=0;
+    
+    #20;
+    trans_req=0; pready=1;
+    
+    #20;
+    trans_req=1; pready=0; 
+    
+    #20;
+    trans_req=1; pready=1;
+    
+    #20;
+    trans_req=0; pready=0;
+    
+    #100;
+    $finish; 
+  end
+endmodule
