@@ -1,0 +1,67 @@
+module apb(
+  input clk,
+  input reset,
+  input trans_req,
+  input pready,
+  output reg psel,
+  output reg penable
+);
+  
+  localparam idle  = 2'b00,
+             setup = 2'b01,
+             acess = 2'b10;
+             
+  reg [1:0] cs, ns;
+  
+  
+  always @(posedge clk or posedge reset) begin
+    if(reset) begin
+      cs <= idle;
+    end else begin
+      cs <= ns; 
+    end
+  end
+  
+ 
+  always @(*) begin
+    // Default values (Using 1-bit assignments!)
+    ns = cs;
+    psel = 1'b0;
+    penable = 1'b0;
+    
+    case(cs)
+      idle: begin
+        psel = 1'b0; 
+        penable = 1'b0;
+        if(trans_req == 1'b0) begin
+          ns = idle; 
+        end else begin
+          ns = setup; 
+        end
+      end
+      
+      setup: begin
+        psel = 1'b1; 
+        penable = 1'b0;
+        ns = acess;
+      end 
+      
+      acess: begin
+        psel = 1'b1; 
+        penable = 1'b1;
+        if(pready == 1'b0) begin
+          ns = acess;
+        end else if (trans_req == 1'b1 && pready == 1'b1) begin
+          ns = setup; 
+        end else begin
+          ns = idle;
+        end
+      end
+      
+      default: begin
+        ns = idle;
+      end
+    endcase
+  end
+  
+endmodule
